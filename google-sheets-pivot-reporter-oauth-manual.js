@@ -228,8 +228,15 @@ class GoogleSheetsPivotReporterOAuth {
       const statusCountsMap = {};
       bodyRows.forEach(row => {
         const status = row[statusIdx] || '';
-        statusCountsMap[status] = (statusCountsMap[status] || 0) + 1;
+        if (status.trim()) { // Only count non-empty statuses
+          statusCountsMap[status] = (statusCountsMap[status] || 0) + 1;
+        }
       });
+
+      // Filter to only show statuses with count > 0
+      const filteredLabels = Object.keys(statusCountsMap).filter(s => statusCountsMap[s] > 0);
+      const filteredCounts = filteredLabels.map(s => statusCountsMap[s]);
+      const filteredColors = filteredLabels.map(s => statusColors[s] || '#ffe082');
 
       indexStoriesTable = `
         <h2>Index of Stories</h2>
@@ -249,7 +256,7 @@ class GoogleSheetsPivotReporterOAuth {
           window.addEventListener('DOMContentLoaded', function() {
             new Chart(document.getElementById('indexStoriesBarChart').getContext('2d'), {
               type: 'bar',
-              data: { labels: ${JSON.stringify(Object.keys(statusCountsMap))}, datasets: [{ label: 'Count', data: ${JSON.stringify(Object.values(statusCountsMap))}, backgroundColor: ${JSON.stringify(Object.keys(statusCountsMap).map(s => statusColors[s] || '#ffe082'))} }] },
+              data: { labels: ${JSON.stringify(filteredLabels)}, datasets: [{ label: 'Count', data: ${JSON.stringify(filteredCounts)}, backgroundColor: ${JSON.stringify(filteredColors)} }] },
               options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
           });
