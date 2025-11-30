@@ -336,6 +336,7 @@ class GoogleSheetsPivotReporterOAuth {
 <body>
   <div class="container">
     <div style="text-align:center;margin-bottom:24px;background:#f3f3fa;padding:32px 0;border-radius:12px;">
+      <img src="nr_image_logo.png" alt="New Relic Logo" style="height:60px;margin-bottom:16px;">
       <h1 style="margin:0;font-size:2.5rem;color:#764ba2;">O2C E2E Test Status Report</h1>
     </div>
     <p style="text-align:center;">Generated: <b>${pstTime} PST</b> | <b>${istTime} IST</b></p>
