@@ -238,15 +238,20 @@ class GoogleSheetsPivotReporterOAuth {
       const filteredCounts = filteredLabels.map(s => statusCountsMap[s]);
       const filteredColors = filteredLabels.map(s => statusColors[s] || '#ffe082');
 
+      // Jira/Xray base URL
+      const jiraBaseUrl = 'https://new-relic.atlassian.net/projects/NR?selectedItem=com.atlassian.plugins.atlassian-connect-plugin:com.xpandit.plugins.xray__testing-board#!page=test-run&testExecutionKey=NR-488556&testPlanId=725086&testKey=';
+
       indexStoriesTable = `
         <h2>Index of Stories</h2>
         <table>
           <thead><tr><th>Test Story</th><th>Description</th><th>Status</th></tr></thead>
           <tbody>
             ${bodyRows.map(row => {
+              const testStory = row[testStoryIdx] || '';
               const status = row[statusIdx] || '';
               const color = statusColors[status] || '#e0e0e0';
-              return `<tr><td>${row[testStoryIdx] || ''}</td><td>${row[descIdx] || ''}</td><td style="background:${color};font-weight:bold;">${status}</td></tr>`;
+              const jiraLink = testStory ? `<a href="${jiraBaseUrl}${testStory}" target="_blank" style="color:#1a73e8;text-decoration:none;font-weight:bold;">${testStory}</a>` : '';
+              return `<tr><td>${jiraLink}</td><td>${row[descIdx] || ''}</td><td style="background:${color};font-weight:bold;">${status}</td></tr>`;
             }).join('')}
           </tbody>
         </table>
