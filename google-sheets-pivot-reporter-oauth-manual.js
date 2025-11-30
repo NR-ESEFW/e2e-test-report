@@ -374,7 +374,35 @@ class GoogleSheetsPivotReporterOAuth {
     <canvas id="testerBarChart" width="800" height="300"></canvas>
 
     <h2>Status Distribution</h2>
-    <canvas id="statusPieChart" width="400" height="200"></canvas>
+    <div style="display:flex;align-items:center;justify-content:center;gap:40px;flex-wrap:wrap;">
+      <canvas id="statusPieChart" width="300" height="300"></canvas>
+      <div class="metrics-summary">
+        <h3 style="margin-top:0;">Summary</h3>
+        <table style="min-width:250px;">
+          <thead>
+            <tr><th>Status</th><th>Count</th><th>%</th></tr>
+          </thead>
+          <tbody>
+            ${statusList.map((status, idx) => {
+              const count = statusCounts[idx];
+              const total = statusCounts.reduce((a, b) => a + b, 0);
+              const percent = total > 0 ? ((count / total) * 100).toFixed(1) : 0;
+              const color = statusColors[status] || '#e0e0e0';
+              return `<tr>
+                <td style="background:${color};font-weight:bold;">${status}</td>
+                <td style="text-align:center;font-weight:bold;">${count}</td>
+                <td style="text-align:center;">${percent}%</td>
+              </tr>`;
+            }).join('')}
+            <tr style="border-top:2px solid #333;">
+              <td><strong>Total</strong></td>
+              <td style="text-align:center;"><strong>${statusCounts.reduce((a, b) => a + b, 0)}</strong></td>
+              <td style="text-align:center;"><strong>100%</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <script>
