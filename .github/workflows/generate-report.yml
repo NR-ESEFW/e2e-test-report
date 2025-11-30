@@ -56,7 +56,7 @@ jobs:
       - name: Generate Report
         env:
           GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
-        run: node google-sheets-pivot-reporter-optimized.js
+        run: node google-sheets-pivot-reporter-oauth-manual.js
 
       - name: Prepare for deployment
         run: |
