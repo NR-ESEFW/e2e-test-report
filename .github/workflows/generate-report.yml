@@ -4,6 +4,10 @@ on:
   # Run every 6 hours
   schedule:
   - cron: '*/15 11-22 * * 1-5'
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
   
   # Allow manual trigger
   workflow_dispatch:
