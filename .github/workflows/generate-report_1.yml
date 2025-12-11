@@ -1,0 +1,77 @@
+name: Generate O2C Test Status Report
+
+on:
+  schedule:
+    - cron: '*/15 11-22 * * 1-5'
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '*.js'
+      - '.github/workflows/**'
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Setup Google OAuth Token
+        run: echo '${{ secrets.GOOGLE_OAUTH_TOKEN }}' > google-token.json
+      
+      - name: Setup OAuth Credentials
+        run: echo '${{ secrets.GOOGLE_OAUTH_CREDENTIALS }}' > oauth-credentials.json
+      
+      - name: Generate Report
+        env:
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+        run: node google-sheets-pivot-reporter-oauth-manual.js
+      
+      - name: Prepare for deployment
+        run: |
+          mkdir -p _site
+          cp o2c-test-status-report.html _site/index.html
+          cp nr_image_logo.png _site/ 2>/dev/null || true
+          cp new_relic_logo_vertical.png _site/ 2>/dev/null || true
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+      
+      - name: Report URL
+        run: |
+          echo "✅ Report published!"
+          echo "🔗 View at: ${{ steps.deployment.outputs.page_url }}"
