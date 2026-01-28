@@ -3,7 +3,7 @@ name: Generate O2C Test Status Report
 on:
   # Run every 6 hours
   schedule:
-  - cron: '*/15 11-22 * * 1-5'
+    - cron: '*/15 11-22 * * 1-5'
   
   # Allow manual trigger
   workflow_dispatch:
