@@ -1,15 +1,7 @@
 name: Generate O2C Test Status Report
 
 on:
-  schedule:
-    - cron: '*/15 11-22 * * 1-5'
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - '*.js'
-      - '.github/workflows/**'
 
 # Required for GitHub Pages deployment
 permissions:
