@@ -287,6 +287,7 @@ class GoogleSheetsPivotReporterOAuth {
       const statusSummary = statusOrder.filter(s => group.statusCounts[s]).map(s => 
         `<span style="background:${statusColors[s]};padding:2px 8px;border-radius:6px;margin-right:6px;">${s}: <b>${group.statusCounts[s]}</b></span>`
       ).join(' ');
+      const totalSummary = `<span style="background:#d1c4e9;padding:2px 8px;border-radius:6px;margin-left:6px;">Total: <b>${row.total}</b></span>`;
       
       const allStatuses = Object.keys(group.statusCounts).filter(s => group.statusCounts[s] > 0);
       const sortedRows = statusOrder.flatMap(status => group.rows.filter(r => r.overallStatus === status));
@@ -295,7 +296,7 @@ class GoogleSheetsPivotReporterOAuth {
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
           <table>
             <thead>
-              <tr style="background:#f3f3fa;"><td colspan="6"><strong>${group.tester}</strong> — ${statusSummary}</td></tr>
+              <tr style="background:#f3f3fa;"><td colspan="6"><strong>${group.tester}</strong> — ${statusSummary}${totalSummary}</td></tr>
               <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th></tr>
             </thead>
             <tbody>
