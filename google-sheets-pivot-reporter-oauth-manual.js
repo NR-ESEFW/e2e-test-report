@@ -240,9 +240,11 @@ class GoogleSheetsPivotReporterOAuth {
       const header = this.indexSheetRows[0];
       const bodyRows = this.indexSheetRows.slice(1).filter(row => row.some(cell => cell));
       
-      let testStoryIdx = 3, descIdx = 2, statusIdx = 4;
+      let testScenarioIdx = 0, testExecutionIdx = 1, testStoryIdx = 3, descIdx = 2, statusIdx = 4;
       header.forEach((cell, i) => {
         const lc = cell?.toLowerCase() || '';
+        if (lc.includes('test scenario')) testScenarioIdx = i;
+        if (lc.includes('test execution')) testExecutionIdx = i;
         if (lc.includes('test story')) testStoryIdx = i;
         if (lc.includes('description')) descIdx = i;
         if (lc.includes('status')) statusIdx = i;
@@ -267,14 +269,32 @@ class GoogleSheetsPivotReporterOAuth {
       indexStoriesTable = `
         <h2>Index of Stories</h2>
         <table>
-          <thead><tr><th>Test Story</th><th>Description</th><th>Status</th></tr></thead>
+          <thead><tr><th>Test Scenario</th><th>Test Execution</th><th>Test Story</th><th>Description</th><th>Status</th></tr></thead>
           <tbody>
             ${bodyRows.map(row => {
+              const testScenario = row[testScenarioIdx] || '';
+              const testExecution = row[testExecutionIdx] || '';
               const testStory = row[testStoryIdx] || '';
+              const description = row[descIdx] || '';
               const status = row[statusIdx] || '';
               const color = statusColors[status] || '#e0e0e0';
+              
+              // Create hyperlink for Test Scenario if it looks like a hyperlink
+              let testScenarioCell = testScenario;
+              if (testScenario && testScenario.includes('http')) {
+                // If it's already a hyperlink, extract URL and text
+                const urlMatch = testScenario.match(/https?:\/\/[^\s)]+/);
+                const linkText = testScenario.replace(/https?:\/\/[^\s)]+/, '').trim().replace(/[()]/g, '') || 'Link';
+                if (urlMatch) {
+                  testScenarioCell = `<a href="${urlMatch[0]}" target="_blank" style="color:#1a73e8;text-decoration:none;font-weight:bold;">${linkText}</a>`;
+                }
+              } else if (testScenario && testScenario.startsWith('NR-')) {
+                // If it's a ticket number, create Jira link
+                testScenarioCell = `<a href="${jiraBaseUrl}${testScenario}" target="_blank" style="color:#1a73e8;text-decoration:none;font-weight:bold;">${testScenario}</a>`;
+              }
+              
               const jiraLink = testStory ? `<a href="${jiraBaseUrl}${testStory}" target="_blank" style="color:#1a73e8;text-decoration:none;font-weight:bold;">${testStory}</a>` : '';
-              return `<tr><td>${jiraLink}</td><td>${row[descIdx] || ''}</td><td style="background:${color};font-weight:bold;">${status}</td></tr>`;
+              return `<tr><td>${testScenarioCell}</td><td>${testExecution}</td><td>${jiraLink}</td><td>${description}</td><td style="background:${color};font-weight:bold;padding:6px;border-radius:4px;color:white;text-align:center;">${status}</td></tr>`;
             }).join('')}
           </tbody>
         </table>
@@ -577,14 +597,18 @@ class GoogleSheetsPivotReporterOAuth {
 </head>
 <body>
   <div class="container">
-    <div style="text-align:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 0; position: relative;">
-      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"50\" cy=\"10\" r=\"0.5\" fill=\"%23ffffff\" opacity=\"0.15\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>'); opacity: 0.3;"></div>
-      <div style="position: relative; z-index: 1;">
-        <div style="margin-bottom: 20px;">
-          <img src="https://newrelic.com/sites/default/files/2021-10/new-relic-logo-vertical-white.svg" alt="New Relic Logo" style="height: 80px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-          <div style="display: none; background: rgba(255,255,255,0.2); padding: 12px 20px; border-radius: 10px; display: inline-block;">
-            <span style="font-size: 1.8em; font-weight: 800; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">NEW RELIC</span>
-          </div>
+    <div style="text-align:center; background: linear-gradient(135deg, #00AC69 0%, #1CE783 100%); padding: 60px 40px; position: relative; overflow: hidden;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);"></div>
+      <div style="position: relative; z-index: 2;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 30px;">
+          <svg style="height: 120px;" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
+            <text x="50" y="120" font-family="Arial Black, sans-serif" font-size="80" font-weight="900" fill="white" letter-spacing="8">
+              NEW RELIC
+            </text>
+            <circle cx="720" cy="100" r="60" fill="rgba(255,255,255,0.2)"/>
+            <circle cx="720" cy="100" r="40" fill="rgba(255,255,255,0.4)"/>
+            <circle cx="720" cy="100" r="20" fill="white"/>
+          </svg>
         </div>
         <h1 style="margin: 0; font-size: 2.8rem; font-weight: 800; color: #ffffff; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">🚀 O2C E2E Test Status Report</h1>
       </div>
