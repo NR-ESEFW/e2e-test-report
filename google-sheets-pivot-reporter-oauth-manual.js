@@ -601,10 +601,10 @@ class GoogleSheetsPivotReporterOAuth {
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);"></div>
       <div style="position: relative; z-index: 2;">
         <div style="margin-bottom: 20px; text-align: center;">
-          <div style="display: inline-block; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); margin-bottom: 20px;">
-            <img src="https://github.com/NR-ESEFW/e2e-test-report/raw/main/NEWR_BIG.D.png" alt="New Relic Logo" style="height: 100px; display: block;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-            <div style="display: none;">
-              <span style="font-size: 2rem; font-weight: 900; color: #00AC69; letter-spacing: 2px;">NEW RELIC</span>
+          <div style="display: inline-block; background: rgba(255,255,255,0.95); padding: 25px 40px; border-radius: 15px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); margin-bottom: 20px;">
+            <img src="https://github.com/NR-ESEFW/e2e-test-report/raw/main/NEWR_BIG.D.png" alt="New Relic Logo" style="height: 80px; display: block; margin: 0 auto 15px auto;">
+            <div style="text-align: center;">
+              <span style="font-size: 2.2rem; font-weight: 900; color: #00AC69; letter-spacing: 2px; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">NEW RELIC</span>
             </div>
           </div>
           <h1 style="color: white; font-size: 3rem; font-weight: 900; margin-top: 10px; text-shadow: 0 4px 8px rgba(0,0,0,0.3); letter-spacing: 1px;">O2C E2E Test Status Report</h1>
