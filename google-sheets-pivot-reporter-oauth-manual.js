@@ -194,13 +194,21 @@ class GoogleSheetsPivotReporterOAuth {
     this.allData.forEach(row => {
       const key = row.tester?.trim();
       if (!key) return;
-      if (!grouped[key]) grouped[key] = { tester: key, rows: [], statusCounts: {}, uniqueTickets: new Set() };
+      if (!grouped[key]) grouped[key] = { 
+        tester: key, 
+        rows: [], 
+        statusCounts: {}, 
+        ticketIterations: new Map() // Track iterations per ticket
+      };
       grouped[key].rows.push(row);
       grouped[key].statusCounts[row.overallStatus] = (grouped[key].statusCounts[row.overallStatus] || 0) + 1;
       
-      // Track unique tickets and iterations for this tester
-      const ticketIteration = `${row.jiraTicket}-${row.iteration}`;
-      grouped[key].uniqueTickets.add(ticketIteration);
+      // Track iterations per ticket for this tester
+      const ticket = row.jiraTicket;
+      if (!grouped[key].ticketIterations.has(ticket)) {
+        grouped[key].ticketIterations.set(ticket, new Set());
+      }
+      grouped[key].ticketIterations.get(ticket).add(row.iteration || '1');
     });
 
     // Sort alphabetically
@@ -208,13 +216,21 @@ class GoogleSheetsPivotReporterOAuth {
     
     const data = sortedTesters.map(testerName => {
       const group = grouped[testerName];
-      const uniqueTicketIterationCount = group.uniqueTickets.size;
+      const uniqueTicketCount = group.ticketIterations.size;
+      
+      // Build ticket iteration details
+      const ticketDetails = [];
+      for (const [ticket, iterations] of group.ticketIterations) {
+        const count = iterations.size;
+        ticketDetails.push({ ticket, count });
+      }
       
       return {
         testerName,
         statusCounts: statusList.map(status => group.statusCounts[status] || 0),
         total: group.rows.length,
-        uniqueTicketIterationCount: uniqueTicketIterationCount
+        uniqueTicketCount: uniqueTicketCount,
+        ticketDetails: ticketDetails
       };
     });
 
@@ -298,11 +314,21 @@ class GoogleSheetsPivotReporterOAuth {
       const allStatuses = Object.keys(group.statusCounts).filter(s => group.statusCounts[s] > 0);
       const sortedRows = statusOrder.flatMap(status => group.rows.filter(r => r.overallStatus === status));
       
+      const ticketDetailsHTML = row.ticketDetails.map(detail => 
+        `<div style="margin-left:20px;font-size:0.9em;color:#666;">Ticket ${detail.ticket} - Count - ${detail.count}</div>`
+      ).join('');
+      
       return `
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
           <table>
             <thead>
-              <tr style="background:#f3f3fa;"><td colspan="6"><strong>${row.testerName}</strong> — ${statusSummary} — <span style="background:#333;color:#fff;padding:2px 8px;border-radius:6px;margin-left:6px;">Ticket Iteration Count: <b>${row.uniqueTicketIterationCount}</b></span></td></tr>
+              <tr style="background:#f3f3fa;">
+                <td colspan="6">
+                  <div><strong>${row.testerName}</strong> — ${statusSummary}</div>
+                  <div style="margin-top:8px;font-size:0.95em;">Tickets on ${row.testerName}: <b>${row.uniqueTicketCount}</b></div>
+                  ${ticketDetailsHTML}
+                </td>
+              </tr>
               <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th></tr>
             </thead>
             <tbody>
