@@ -600,13 +600,13 @@ class GoogleSheetsPivotReporterOAuth {
     <div style="text-align:center; background: linear-gradient(135deg, #00AC69 0%, #1CE783 100%); padding: 60px 40px; position: relative; overflow: hidden;">
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);"></div>
       <div style="position: relative; z-index: 2;">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 30px;">
-          <img src="NEWR_BIG.D.png" alt="New Relic Logo" style="height: 120px; filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.3));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <div style="margin-bottom: 30px; text-align: center;">
+          <img src="NEWR_BIG.D.png" alt="New Relic Logo" style="height: 100px; margin-bottom: 20px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
           <div style="display: none;">
-            <span style="font-size: 3rem; font-weight: 900; color: white; text-shadow: 0 4px 8px rgba(0,0,0,0.3); letter-spacing: 2px;">NEW RELIC</span>
+            <span style="font-size: 2.5rem; font-weight: 900; color: white; text-shadow: 0 4px 8px rgba(0,0,0,0.3); letter-spacing: 2px;">NEW RELIC</span>
           </div>
         </div>
-        <h1 style="margin: 0; font-size: 2.8rem; font-weight: 800; color: #ffffff; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">🚀 O2C E2E Test Status Report</h1>
+        <h1 style="margin: 0; font-size: 2.8rem; font-weight: 800; color: #ffffff; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">O2C E2E Test Status Report</h1>
       </div>
     </div>
     <div class="main-content">
