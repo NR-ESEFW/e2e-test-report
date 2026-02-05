@@ -494,7 +494,7 @@ class GoogleSheetsPivotReporterOAuth {
 
     const now = new Date();
     const pstTime = now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles', hour12: true });
-    const istTime = now.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+    const istTime = now.toLocaleString('en-US', { timeZone: 'Asia/Kolkata', hour12: true });
 
     return `<!DOCTYPE html>
 <html lang="en">
@@ -608,9 +608,9 @@ class GoogleSheetsPivotReporterOAuth {
     </div>
     <div class="main-content">
       <p style="text-align:center; color: #6b7280; font-size: 1.1em; margin-bottom: 40px;">
-        <strong style="color: #374151;">Generated:</strong> 
-        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${pstTime} PST</span> | 
-        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${istTime} IST</span>
+        <strong style="color: #374151;">📊 Report Published on:</strong> 
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 ${pstTime} PST</span> | 
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 ${istTime} IST</span>
       </p>
     
     ${indexStoriesTable}
