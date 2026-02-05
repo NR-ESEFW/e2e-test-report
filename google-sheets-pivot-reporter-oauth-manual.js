@@ -577,7 +577,18 @@ class GoogleSheetsPivotReporterOAuth {
 </head>
 <body>
   <div class="container">
-    <h1>🚀 O2C E2E Test Status Report</h1>
+    <div style="text-align:center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 0; position: relative;">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\"><defs><pattern id=\"grain\" width=\"100\" height=\"100\" patternUnits=\"userSpaceOnUse\"><circle cx=\"25\" cy=\"25\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"75\" cy=\"75\" r=\"1\" fill=\"%23ffffff\" opacity=\"0.1\"/><circle cx=\"50\" cy=\"10\" r=\"0.5\" fill=\"%23ffffff\" opacity=\"0.15\"/></pattern></defs><rect width=\"100\" height=\"100\" fill=\"url(%23grain)\"/></svg>'); opacity: 0.3;"></div>
+      <div style="position: relative; z-index: 1;">
+        <div style="margin-bottom: 20px;">
+          <img src="https://newrelic.com/sites/default/files/2021-10/new-relic-logo-vertical-white.svg" alt="New Relic Logo" style="height: 80px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div style="display: none; background: rgba(255,255,255,0.2); padding: 12px 20px; border-radius: 10px; display: inline-block;">
+            <span style="font-size: 1.8em; font-weight: 800; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">NEW RELIC</span>
+          </div>
+        </div>
+        <h1 style="margin: 0; font-size: 2.8rem; font-weight: 800; color: #ffffff; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">🚀 O2C E2E Test Status Report</h1>
+      </div>
+    </div>
     <div class="main-content">
       <p style="text-align:center; color: #6b7280; font-size: 1.1em; margin-bottom: 40px;">
         <strong style="color: #374151;">Generated:</strong> 
