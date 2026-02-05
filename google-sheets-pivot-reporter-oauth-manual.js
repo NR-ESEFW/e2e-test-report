@@ -176,11 +176,11 @@ class GoogleSheetsPivotReporterOAuth {
 
   generateHTMLReport() {
     const statusColors = {
-      'Passed': '#81c784',
-      'Failed': '#ffb300',
-      'Blocked': '#ff8a80',
-      'Not Started': '#bdbdbd',
-      'In Progress': '#ffe082',
+      'Passed': '#4CAF50',
+      'Failed': '#F44336',
+      'Blocked': '#E91E63',
+      'Not Started': '#9E9E9E',
+      'In Progress': '#FF9800',
     };
     const statusOrder = ['Passed', 'Failed', 'Blocked', 'In Progress', 'Not Started'];
 
@@ -601,14 +601,10 @@ class GoogleSheetsPivotReporterOAuth {
       <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 20% 80%, rgba(255,255,255,0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);"></div>
       <div style="position: relative; z-index: 2;">
         <div style="display: flex; align-items: center; justify-content: center; gap: 30px; margin-bottom: 30px;">
-          <svg style="height: 120px;" viewBox="0 0 800 200" xmlns="http://www.w3.org/2000/svg">
-            <text x="50" y="120" font-family="Arial Black, sans-serif" font-size="80" font-weight="900" fill="white" letter-spacing="8">
-              NEW RELIC
-            </text>
-            <circle cx="720" cy="100" r="60" fill="rgba(255,255,255,0.2)"/>
-            <circle cx="720" cy="100" r="40" fill="rgba(255,255,255,0.4)"/>
-            <circle cx="720" cy="100" r="20" fill="white"/>
-          </svg>
+          <img src="nr_image_logo.png" alt="New Relic Logo" style="height: 120px; filter: brightness(0) invert(1) drop-shadow(0 4px 8px rgba(0,0,0,0.3));" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+          <div style="display: none;">
+            <span style="font-size: 3rem; font-weight: 900; color: white; text-shadow: 0 4px 8px rgba(0,0,0,0.3); letter-spacing: 2px;">NEW RELIC</span>
+          </div>
         </div>
         <h1 style="margin: 0; font-size: 2.8rem; font-weight: 800; color: #ffffff; text-shadow: 0 4px 8px rgba(0,0,0,0.3);">🚀 O2C E2E Test Status Report</h1>
       </div>
