@@ -314,32 +314,152 @@ class GoogleSheetsPivotReporterOAuth {
       const allStatuses = Object.keys(group.statusCounts).filter(s => group.statusCounts[s] > 0);
       const sortedRows = statusOrder.flatMap(status => group.rows.filter(r => r.overallStatus === status));
       
-      const ticketDetailsHTML = row.ticketDetails.map(detail => 
-        `<div style="margin-left:20px;font-size:0.9em;color:#666;">Ticket ${detail.ticket} - Count - ${detail.count}</div>`
-      ).join('');
+      const ticketDetailsHTML = row.ticketDetails.map((detail, index) => {
+        const bgColor = index % 2 === 0 ? '#f8fafc' : '#ffffff';
+        const borderColor = detail.count > 3 ? '#dc2626' : detail.count > 1 ? '#f59e0b' : '#10b981';
+        return `
+          <div style="
+            background: ${bgColor};
+            border-left: 4px solid ${borderColor};
+            margin: 4px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+          " onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
+            <span style="font-weight: 600; color: #374151; font-size: 0.9em;">${detail.ticket}</span>
+            <span style="
+              background: linear-gradient(135deg, ${borderColor}15, ${borderColor}25);
+              color: ${borderColor === '#dc2626' ? '#dc2626' : borderColor === '#f59e0b' ? '#d97706' : '#059669'};
+              padding: 2px 8px;
+              border-radius: 12px;
+              font-size: 0.8em;
+              font-weight: 700;
+              margin-left: 8px;
+              border: 1px solid ${borderColor}40;
+            ">Iteration Cases: ${detail.count}</span>
+          </div>`;
+      }).join('');
       
       return `
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
-          <table>
-            <thead>
-              <tr style="background:#f3f3fa;">
-                <td colspan="6">
-                  <div><strong>${row.testerName}</strong> — ${statusSummary}</div>
-                  <div style="margin-top:8px;font-size:0.95em;">Tickets on ${row.testerName}: <b>${row.uniqueTicketCount}</b></div>
-                  ${ticketDetailsHTML}
-                </td>
-              </tr>
-              <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th></tr>
-            </thead>
+          <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+            overflow: hidden;
+          ">
+            <!-- Header Section -->
+            <div style="
+              background: rgba(255, 255, 255, 0.95);
+              padding: 20px;
+              border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+            ">
+              <h3 style="
+                margin: 0 0 12px 0;
+                color: #1f2937;
+                font-size: 1.4em;
+                font-weight: 700;
+                display: flex;
+                align-items: center;
+              ">
+                <span style="
+                  background: linear-gradient(135deg, #667eea, #764ba2);
+                  -webkit-background-clip: text;
+                  -webkit-text-fill-color: transparent;
+                  background-clip: text;
+                ">${row.testerName}</span>
+                <span style="
+                  background: #374151;
+                  color: white;
+                  padding: 4px 10px;
+                  border-radius: 20px;
+                  font-size: 0.7em;
+                  margin-left: 12px;
+                  font-weight: 600;
+                ">TESTER</span>
+              </h3>
+              
+              <!-- Status Summary -->
+              <div style="margin-bottom: 16px;">
+                ${statusSummary}
+              </div>
+              
+              <!-- Total Tickets Header -->
+              <div style="
+                background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+                color: white;
+                padding: 12px 16px;
+                border-radius: 8px;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+              ">
+                <span style="font-weight: 600; font-size: 1.05em;">📋 Total Tickets under ${row.testerName}</span>
+                <span style="
+                  background: rgba(255, 255, 255, 0.2);
+                  padding: 4px 12px;
+                  border-radius: 20px;
+                  font-weight: 700;
+                  font-size: 1.1em;
+                ">${row.uniqueTicketCount}</span>
+              </div>
+              
+              <!-- Tickets List -->
+              <div style="
+                background: #f9fafb;
+                border-radius: 8px;
+                padding: 12px;
+                border: 1px solid #e5e7eb;
+              ">
+                ${ticketDetailsHTML}
+              </div>
+            </div>
+            
+            <!-- Table Section -->
+            <table style="width: 100%; border-collapse: collapse; background: white;">
+              <thead>
+                <tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">👤 Tester</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">🎫 Jira Tickets</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">🔄 Iterations</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">📊 Status</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">🐛 Defects</th>
+                  <th style="padding: 12px; text-align: left; font-weight: 600;">💬 Comments</th>
+                </tr>
+              </thead>
             <tbody>
-              ${sortedRows.map(r => `
-                <tr class="row-status-${r.overallStatus.replace(/\s/g, '_')}">
-                  <td>${r.tester}</td><td>${r.jiraTicket}</td><td>${r.iteration}</td>
-                  <td style="background:${statusColors[r.overallStatus] || '#e0e0e0'};font-weight:bold;">${r.overallStatus}</td>
-                  <td style="color:#d32f2f;font-weight:bold;">${r.defect}</td><td>${r.comments}</td>
-                </tr>`).join('')}
+              ${sortedRows.map((r, index) => {
+                const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                return `
+                <tr class="row-status-${r.overallStatus.replace(/\s/g, '_')}" style="
+                  background: ${rowBg};
+                  transition: all 0.2s ease;
+                " onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='${rowBg}'">
+                  <td style="padding: 12px; color: #374151; font-weight: 500;">${r.tester}</td>
+                  <td style="padding: 12px; color: #1f2937; font-weight: 600;">${r.jiraTicket}</td>
+                  <td style="padding: 12px; color: #6b7280;">${r.iteration}</td>
+                  <td style="
+                    padding: 8px;
+                    background: ${statusColors[r.overallStatus] || '#e0e0e0'};
+                    color: ${r.overallStatus === 'Passed' ? '#065f46' : r.overallStatus === 'Failed' ? '#92400e' : r.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
+                    font-weight: 700;
+                    border-radius: 6px;
+                    text-align: center;
+                    text-transform: uppercase;
+                    font-size: 0.85em;
+                    letter-spacing: 0.5px;
+                  ">${r.overallStatus}</td>
+                  <td style="padding: 12px; color: #dc2626; font-weight: 600; font-size: 0.9em;">${r.defect}</td>
+                  <td style="padding: 12px; color: #4b5563; font-size: 0.9em; line-height: 1.4;">${r.comments}</td>
+                </tr>`;
+              }).join('')}
             </tbody>
           </table>
+          </div>
         </div>`;
     }).join('');
 
@@ -363,28 +483,107 @@ class GoogleSheetsPivotReporterOAuth {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>O2C Test Status Report</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #f8f9ff; }
-    .container { max-width: 1200px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); padding: 32px; }
-    h1 { color: #764ba2; }
-    h2 { color: #333; margin-top: 40px; }
-    table { width: 100%; border-collapse: collapse; margin: 24px 0; }
-    th, td { padding: 10px 14px; border-bottom: 1px solid #eee; text-align: left; }
-    th { background: #764ba2; color: #fff; }
-    tr:hover { background: #f3f3fa; }
+    * { box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { 
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      overflow: hidden;
+    }
+    h1 { 
+      color: #ffffff;
+      text-align: center;
+      margin: 0;
+      padding: 40px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-size: 2.8rem;
+      font-weight: 800;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    h2 { 
+      color: #1f2937;
+      margin: 40px 0 20px 0;
+      font-size: 1.8rem;
+      font-weight: 700;
+      border-left: 5px solid #667eea;
+      padding-left: 15px;
+    }
+    table { 
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    th, td { 
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    th { 
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: #ffffff;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 0.9em;
+    }
+    tr:hover { 
+      background: #f0f4ff !important;
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
+    }
     .hidden { display: none; }
-    .filter-section { margin: 20px 0; padding: 16px; background: #f3f3fa; border-radius: 8px; }
-    .filter-section select { padding: 8px 12px; margin-right: 16px; border-radius: 4px; border: 1px solid #ccc; }
-    .aggregate-block { margin-bottom: 24px; }
+    .filter-section { 
+      margin: 30px 0;
+      padding: 24px;
+      background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+      border-radius: 16px;
+      border: 1px solid #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .filter-section select { 
+      padding: 12px 16px;
+      margin-right: 16px;
+      border-radius: 8px;
+      border: 2px solid #cbd5e1;
+      background: white;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .filter-section select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .aggregate-block { 
+      margin-bottom: 40px;
+    }
+    .main-content {
+      padding: 40px;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="container">
-    <div style="text-align:center;margin-bottom:24px;background:#f3f3fa;padding:32px 0;border-radius:12px;">
-      <img src="nr_image_logo.png" alt="New Relic Logo" style="height:60px;margin-bottom:16px;">
-      <h1 style="margin:0;font-size:2.5rem;color:#764ba2;">O2C E2E Test Status Report</h1>
-    </div>
-    <p style="text-align:center;">Generated: <b>${pstTime} PST</b> | <b>${istTime} IST</b></p>
+    <h1>🚀 O2C E2E Test Status Report</h1>
+    <div class="main-content">
+      <p style="text-align:center; color: #6b7280; font-size: 1.1em; margin-bottom: 40px;">
+        <strong style="color: #374151;">Generated:</strong> 
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${pstTime} PST</span> | 
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">${istTime} IST</span>
+      </p>
     
     ${indexStoriesTable}
     
