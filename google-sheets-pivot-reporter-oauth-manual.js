@@ -295,8 +295,8 @@ class GoogleSheetsPivotReporterOAuth {
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
           <table>
             <thead>
-              <tr style="background:#f3f3fa;"><td colspan="6"><strong>${group.tester}</strong> — ${statusSummary}</td></tr>
-              <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th></tr>
+              <tr style="background:#f3f3fa;"><td colspan="7"><strong>${row.testerName}</strong> — ${statusSummary}</td></tr>
+              <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th><th>Total</th></tr>
             </thead>
             <tbody>
               ${sortedRows.map(r => `
@@ -304,6 +304,7 @@ class GoogleSheetsPivotReporterOAuth {
                   <td>${r.tester}</td><td>${r.jiraTicket}</td><td>${r.iteration}</td>
                   <td style="background:${statusColors[r.overallStatus] || '#e0e0e0'};font-weight:bold;">${r.overallStatus}</td>
                   <td style="color:#d32f2f;font-weight:bold;">${r.defect}</td><td>${r.comments}</td>
+                  <td style="font-weight:bold;">1</td>
                 </tr>`).join('')}
             </tbody>
           </table>
