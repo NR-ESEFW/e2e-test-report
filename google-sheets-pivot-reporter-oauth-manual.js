@@ -194,9 +194,13 @@ class GoogleSheetsPivotReporterOAuth {
     this.allData.forEach(row => {
       const key = row.tester?.trim();
       if (!key) return;
-      if (!grouped[key]) grouped[key] = { tester: key, rows: [], statusCounts: {} };
+      if (!grouped[key]) grouped[key] = { tester: key, rows: [], statusCounts: {}, uniqueTickets: new Set() };
       grouped[key].rows.push(row);
       grouped[key].statusCounts[row.overallStatus] = (grouped[key].statusCounts[row.overallStatus] || 0) + 1;
+      
+      // Track unique tickets and iterations for this tester
+      const ticketIteration = `${row.jiraTicket}-${row.iteration}`;
+      grouped[key].uniqueTickets.add(ticketIteration);
     });
 
     // Sort alphabetically
@@ -204,10 +208,13 @@ class GoogleSheetsPivotReporterOAuth {
     
     const data = sortedTesters.map(testerName => {
       const group = grouped[testerName];
+      const uniqueTicketIterationCount = group.uniqueTickets.size;
+      
       return {
         testerName,
         statusCounts: statusList.map(status => group.statusCounts[status] || 0),
         total: group.rows.length,
+        uniqueTicketIterationCount: uniqueTicketIterationCount
       };
     });
 
@@ -295,8 +302,8 @@ class GoogleSheetsPivotReporterOAuth {
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
           <table>
             <thead>
-              <tr style="background:#f3f3fa;"><td colspan="7"><strong>${row.testerName}</strong> — ${statusSummary}</td></tr>
-              <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th><th>Total</th></tr>
+              <tr style="background:#f3f3fa;"><td colspan="6"><strong>${row.testerName}</strong> — ${statusSummary} — <span style="background:#333;color:#fff;padding:2px 8px;border-radius:6px;margin-left:6px;">Ticket Iteration Count: <b>${row.uniqueTicketIterationCount}</b></span></td></tr>
+              <tr><th>Tester</th><th>Jira Tickets</th><th>Iterations</th><th>Status</th><th>Defects</th><th>Comments</th></tr>
             </thead>
             <tbody>
               ${sortedRows.map(r => `
@@ -304,7 +311,6 @@ class GoogleSheetsPivotReporterOAuth {
                   <td>${r.tester}</td><td>${r.jiraTicket}</td><td>${r.iteration}</td>
                   <td style="background:${statusColors[r.overallStatus] || '#e0e0e0'};font-weight:bold;">${r.overallStatus}</td>
                   <td style="color:#d32f2f;font-weight:bold;">${r.defect}</td><td>${r.comments}</td>
-                  <td style="font-weight:bold;">1</td>
                 </tr>`).join('')}
             </tbody>
           </table>
