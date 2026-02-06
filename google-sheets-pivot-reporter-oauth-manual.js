@@ -818,8 +818,8 @@ class GoogleSheetsPivotReporterOAuth {
           ticketRows.forEach(function(row) {
             var statusSpan = row.querySelector('span[style*="text-transform: uppercase"]');
             if (statusSpan) {
-              var rowStatus = statusSpan.textContent.trim();
-              if (status === 'ALL' || rowStatus === status) {
+              var rowStatus = statusSpan.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
                 row.style.display = 'block';
                 visibleRowsInBlock++;
                 totalVisibleRows++;
@@ -855,8 +855,8 @@ class GoogleSheetsPivotReporterOAuth {
           detailTable.querySelectorAll('tr').forEach(function(tr) {
             var statusCell = tr.querySelector('td:nth-child(3) span');
             if (statusCell) {
-              var rowStatus = statusCell.textContent.trim();
-              if (status === 'ALL' || rowStatus === status) {
+              var rowStatus = statusCell.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
                 tr.style.display = '';
                 if (!blockHasVisibleRows) {
                   totalVisibleRows++;

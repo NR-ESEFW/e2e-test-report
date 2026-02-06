@@ -113,8 +113,8 @@
     <div class="main-content">
       <p style="text-align:center; color: #6b7280; font-size: 1.1em; margin-bottom: 40px;">
         <strong style="color: #374151;">📊 Report Published on:</strong> 
-        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 2/6/2026, 10:37:41 AM PST</span> | 
-        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 2/7/2026, 12:07:41 AM IST</span>
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 2/6/2026, 10:51:21 AM PST</span> | 
+        <span style="background: #ddd6fe; color: #5b21b6; padding: 4px 8px; border-radius: 6px; font-weight: 600;">🕐 2/7/2026, 12:21:21 AM IST</span>
       </p>
     
     
@@ -14596,8 +14596,8 @@ Retested failed</td>
           ticketRows.forEach(function(row) {
             var statusSpan = row.querySelector('span[style*="text-transform: uppercase"]');
             if (statusSpan) {
-              var rowStatus = statusSpan.textContent.trim();
-              if (status === 'ALL' || rowStatus === status) {
+              var rowStatus = statusSpan.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
                 row.style.display = 'block';
                 visibleRowsInBlock++;
                 totalVisibleRows++;
@@ -14633,8 +14633,8 @@ Retested failed</td>
           detailTable.querySelectorAll('tr').forEach(function(tr) {
             var statusCell = tr.querySelector('td:nth-child(3) span');
             if (statusCell) {
-              var rowStatus = statusCell.textContent.trim();
-              if (status === 'ALL' || rowStatus === status) {
+              var rowStatus = statusCell.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
                 tr.style.display = '';
                 if (!blockHasVisibleRows) {
                   totalVisibleRows++;
