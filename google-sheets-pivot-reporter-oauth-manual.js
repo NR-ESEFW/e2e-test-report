@@ -334,26 +334,16 @@ class GoogleSheetsPivotReporterOAuth {
       const allStatuses = Object.keys(group.statusCounts).filter(s => group.statusCounts[s] > 0);
       const sortedRows = statusOrder.flatMap(status => group.rows.filter(r => r.overallStatus === status));
       
-      const ticketDetailsHTML = row.ticketDetails.map((detail, index) => {
+      // Generate individual iteration entries instead of grouping by ticket
+      const ticketDetailsHTML = [];
+      let index = 0;
+      
+      // Go through each row individually to show each iteration separately
+      group.rows.forEach(row => {
         const bgColor = index % 2 === 0 ? '#f8fafc' : '#ffffff';
-        const borderColor = detail.count > 3 ? '#dc2626' : detail.count > 1 ? '#f59e0b' : '#10b981';
+        const borderColor = statusColors[row.overallStatus] || '#e0e0e0';
         
-        // Get all iterations for this ticket and their individual statuses
-        const ticketRows = group.rows.filter(r => r.jiraTicket === detail.ticket);
-        const iterationStatusBadges = ticketRows.map((row, idx) => 
-          `<span style="
-            background: ${statusColors[row.overallStatus] || '#e0e0e0'};
-            color: ${row.overallStatus === 'Passed' ? '#065f46' : row.overallStatus === 'Failed' ? '#92400e' : row.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
-            padding: 2px 6px;
-            border-radius: 8px;
-            font-size: 0.7em;
-            font-weight: 700;
-            margin-left: 4px;
-            text-transform: uppercase;
-          ">${row.overallStatus}</span>`
-        ).join('');
-        
-        return `
+        ticketDetailsHTML.push(`
           <div style="
             background: ${bgColor};
             border-left: 4px solid ${borderColor};
@@ -363,26 +353,34 @@ class GoogleSheetsPivotReporterOAuth {
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: all 0.2s ease;
           " onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
               <div>
-                <span style="font-weight: 600; color: #374151; font-size: 0.9em;">${detail.ticket}</span>
+                <span style="font-weight: 600; color: #374151; font-size: 0.9em;">${row.jiraTicket}</span>
                 <span style="
-                  background: linear-gradient(135deg, ${borderColor}15, ${borderColor}25);
-                  color: ${borderColor === '#dc2626' ? '#dc2626' : borderColor === '#f59e0b' ? '#d97706' : '#059669'};
+                  background: rgba(107, 114, 128, 0.1);
+                  color: #6b7280;
                   padding: 2px 8px;
                   border-radius: 12px;
-                  font-size: 0.8em;
-                  font-weight: 700;
+                  font-size: 0.75em;
+                  font-weight: 600;
                   margin-left: 8px;
-                  border: 1px solid ${borderColor}40;
-                ">Iteration Cases: ${detail.count}</span>
+                ">${row.iteration}</span>
               </div>
-              <div style="display: flex; align-items: center; margin-top: 4px; flex-wrap: wrap;">
-                ${iterationStatusBadges}
-              </div>
+              <span style="
+                background: ${statusColors[row.overallStatus] || '#e0e0e0'};
+                color: ${row.overallStatus === 'Passed' ? '#065f46' : row.overallStatus === 'Failed' ? '#92400e' : row.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
+                padding: 2px 8px;
+                border-radius: 8px;
+                font-size: 0.75em;
+                font-weight: 700;
+                text-transform: uppercase;
+              ">${row.overallStatus}</span>
             </div>
-          </div>`;
-      }).join('');
+          </div>`);
+        index++;
+      });
+      
+      const ticketDetailsHTMLString = ticketDetailsHTML.join('');
       
       return `
         <div class="aggregate-block" data-tester="${row.testerName}" data-statuses="${allStatuses.join(',')}">
@@ -459,7 +457,7 @@ class GoogleSheetsPivotReporterOAuth {
                   border: 1px solid #e5e7eb;
                 ">
                   <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 1em;">🎫 Ticket Details</h4>
-                  ${ticketDetailsHTML}
+                  ${ticketDetailsHTMLString}
                 </div>
                 
                 <!-- Right Column: Charts -->
