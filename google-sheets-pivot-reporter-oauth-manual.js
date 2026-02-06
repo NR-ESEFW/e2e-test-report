@@ -338,20 +338,19 @@ class GoogleSheetsPivotReporterOAuth {
         const bgColor = index % 2 === 0 ? '#f8fafc' : '#ffffff';
         const borderColor = detail.count > 3 ? '#dc2626' : detail.count > 1 ? '#f59e0b' : '#10b981';
         
-        // Get the status information for this ticket from the grouped data
+        // Get all iterations for this ticket and their individual statuses
         const ticketRows = group.rows.filter(r => r.jiraTicket === detail.ticket);
-        const ticketStatuses = [...new Set(ticketRows.map(r => r.overallStatus))];
-        const statusBadges = ticketStatuses.map(status => 
+        const iterationStatusBadges = ticketRows.map((row, idx) => 
           `<span style="
-            background: ${statusColors[status] || '#e0e0e0'};
-            color: ${status === 'Passed' ? '#065f46' : status === 'Failed' ? '#92400e' : status === 'Blocked' ? '#7f1d1d' : '#374151'};
-            padding: 1px 6px;
+            background: ${statusColors[row.overallStatus] || '#e0e0e0'};
+            color: ${row.overallStatus === 'Passed' ? '#065f46' : row.overallStatus === 'Failed' ? '#92400e' : row.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
+            padding: 2px 6px;
             border-radius: 8px;
             font-size: 0.7em;
             font-weight: 700;
             margin-left: 4px;
             text-transform: uppercase;
-          ">${status}</span>`
+          ">${row.overallStatus}</span>`
         ).join('');
         
         return `
@@ -378,8 +377,8 @@ class GoogleSheetsPivotReporterOAuth {
                   border: 1px solid ${borderColor}40;
                 ">Iteration Cases: ${detail.count}</span>
               </div>
-              <div style="display: flex; align-items: center; margin-top: 4px;">
-                ${statusBadges}
+              <div style="display: flex; align-items: center; margin-top: 4px; flex-wrap: wrap;">
+                ${iterationStatusBadges}
               </div>
             </div>
           </div>`;
