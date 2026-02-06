@@ -428,14 +428,61 @@ class GoogleSheetsPivotReporterOAuth {
                 ">${row.uniqueTicketCount}</span>
               </div>
               
-              <!-- Tickets List -->
-              <div style="
-                background: #f9fafb;
-                border-radius: 8px;
-                padding: 12px;
-                border: 1px solid #e5e7eb;
-              ">
-                ${ticketDetailsHTML}
+              <!-- Two Column Layout: Tickets List + Charts -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                
+                <!-- Left Column: Tickets List -->
+                <div style="
+                  background: #f9fafb;
+                  border-radius: 8px;
+                  padding: 12px;
+                  border: 1px solid #e5e7eb;
+                ">
+                  <h4 style="margin: 0 0 10px 0; color: #374151; font-size: 1em;">🎫 Ticket Details</h4>
+                  ${ticketDetailsHTML}
+                </div>
+                
+                <!-- Right Column: Charts -->
+                <div style="
+                  background: #ffffff;
+                  border-radius: 8px;
+                  padding: 12px;
+                  border: 1px solid #e5e7eb;
+                  text-align: center;
+                ">
+                  <h4 style="margin: 0 0 15px 0; color: #374151; font-size: 1em;">📊 Performance Metrics</h4>
+                  
+                  <!-- Status Distribution Pie Chart -->
+                  <div style="margin-bottom: 20px;">
+                    <canvas id="pieChart-${row.testerName.replace(/\s+/g, '')}" width="200" height="200"></canvas>
+                  </div>
+                  
+                  <!-- Key Metrics -->
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+                    <div style="background: #10b981; color: white; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                      <div style="font-weight: 600;">✅ Passed</div>
+                      <div style="font-size: 1.2em;">${group.statusCounts.Passed || 0}</div>
+                    </div>
+                    <div style="background: #f59e0b; color: white; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                      <div style="font-weight: 600;">⚡ Progress</div>
+                      <div style="font-size: 1.2em;">${group.statusCounts['In Progress'] || 0}</div>
+                    </div>
+                    <div style="background: #ef4444; color: white; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                      <div style="font-weight: 600;">❌ Failed</div>
+                      <div style="font-size: 1.2em;">${group.statusCounts.Failed || 0}</div>
+                    </div>
+                    <div style="background: #8b5cf6; color: white; padding: 8px; border-radius: 6px; font-size: 0.9em;">
+                      <div style="font-weight: 600;">🚫 Blocked</div>
+                      <div style="font-size: 1.2em;">${group.statusCounts.Blocked || 0}</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Success Rate -->
+                  <div style="margin-top: 15px; padding: 10px; background: linear-gradient(45deg, #10b981, #059669); color: white; border-radius: 8px;">
+                    <div style="font-weight: 600; font-size: 0.9em;">🎯 Success Rate</div>
+                    <div style="font-size: 1.4em; font-weight: 700;">${Math.round(((group.statusCounts.Passed || 0) / row.uniqueTicketCount) * 100)}%</div>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -703,6 +750,44 @@ class GoogleSheetsPivotReporterOAuth {
         data: { labels: ${JSON.stringify(barLabels)}, datasets: ${JSON.stringify(barDataSets)} },
         options: { plugins: { legend: { position: 'top' } }, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
       });
+      
+      // Individual tester pie charts
+      ${data.map(row => {
+        const group = grouped[row.testerName];
+        const testerStatusCounts = Object.values(group.statusCounts);
+        const testerStatusLabels = Object.keys(group.statusCounts);
+        const testerColors = testerStatusLabels.map(status => statusColors[status] || '#e0e0e0');
+        
+        return `
+      try {
+        new Chart(document.getElementById('pieChart-${row.testerName.replace(/\s+/g, '')}').getContext('2d'), {
+          type: 'doughnut',
+          data: { 
+            labels: ${JSON.stringify(testerStatusLabels)}, 
+            datasets: [{ 
+              data: ${JSON.stringify(testerStatusCounts)}, 
+              backgroundColor: ${JSON.stringify(testerColors)},
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }] 
+          },
+          options: { 
+            plugins: { 
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return context.label + ': ' + context.parsed + ' tickets';
+                  }
+                }
+              }
+            },
+            maintainAspectRatio: false,
+            responsive: true
+          }
+        });
+      } catch(e) { console.log('Chart error for ${row.testerName}:', e); }`;
+      }).join('')}
     };
   </script>
 </body>
