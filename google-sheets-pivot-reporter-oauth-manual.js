@@ -571,48 +571,7 @@ class GoogleSheetsPivotReporterOAuth {
                 </div>
               </div>
             </div>
-            
-            <!-- Table Section -->
-            <table style="width: 100%; border-collapse: collapse; background: white;">
-              <thead>
-                <tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">👤 Tester</th>
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">🎫 Jira Tickets</th>
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">🔄 Iterations</th>
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">📊 Status</th>
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">🐛 Defects</th>
-                  <th style="padding: 12px; text-align: left; font-weight: 600;">💬 Comments</th>
-                </tr>
-              </thead>
-            <tbody>
-              ${sortedRows.map((r, index) => {
-                const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
-                return `
-                <tr class="row-status-${r.overallStatus.replace(/\s/g, '_')}" style="
-                  background: ${rowBg};
-                  transition: all 0.2s ease;
-                " onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='${rowBg}'">
-                  <td style="padding: 12px; color: #374151; font-weight: 500;">${r.tester}</td>
-                  <td style="padding: 12px; color: #1f2937; font-weight: 600;">${r.jiraTicket}</td>
-                  <td style="padding: 12px; color: #6b7280;">${r.iteration}</td>
-                  <td style="
-                    padding: 8px;
-                    background: ${statusColors[r.overallStatus] || '#e0e0e0'};
-                    color: ${r.overallStatus === 'Passed' ? '#065f46' : r.overallStatus === 'Failed' ? '#92400e' : r.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
-                    font-weight: 700;
-                    border-radius: 6px;
-                    text-align: center;
-                    text-transform: uppercase;
-                    font-size: 0.85em;
-                    letter-spacing: 0.5px;
-                  ">${r.overallStatus}</td>
-                  <td style="padding: 12px; color: #dc2626; font-weight: 600; font-size: 0.9em;">${r.defect}</td>
-                  <td style="padding: 12px; color: #4b5563; font-size: 0.9em; line-height: 1.4;">${r.comments}</td>
-                </tr>`;
-              }).join('')}
-            </tbody>
-          </table>
-          </div>
+            </div>
         </div>`;
     }).join('');
 
