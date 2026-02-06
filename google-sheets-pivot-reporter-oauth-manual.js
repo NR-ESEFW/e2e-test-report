@@ -337,6 +337,23 @@ class GoogleSheetsPivotReporterOAuth {
       const ticketDetailsHTML = row.ticketDetails.map((detail, index) => {
         const bgColor = index % 2 === 0 ? '#f8fafc' : '#ffffff';
         const borderColor = detail.count > 3 ? '#dc2626' : detail.count > 1 ? '#f59e0b' : '#10b981';
+        
+        // Get the status information for this ticket from the grouped data
+        const ticketRows = group.rows.filter(r => r.jiraTicket === detail.ticket);
+        const ticketStatuses = [...new Set(ticketRows.map(r => r.overallStatus))];
+        const statusBadges = ticketStatuses.map(status => 
+          `<span style="
+            background: ${statusColors[status] || '#e0e0e0'};
+            color: ${status === 'Passed' ? '#065f46' : status === 'Failed' ? '#92400e' : status === 'Blocked' ? '#7f1d1d' : '#374151'};
+            padding: 1px 6px;
+            border-radius: 8px;
+            font-size: 0.7em;
+            font-weight: 700;
+            margin-left: 4px;
+            text-transform: uppercase;
+          ">${status}</span>`
+        ).join('');
+        
         return `
           <div style="
             background: ${bgColor};
@@ -347,17 +364,24 @@ class GoogleSheetsPivotReporterOAuth {
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             transition: all 0.2s ease;
           " onmouseover="this.style.boxShadow='0 4px 8px rgba(0,0,0,0.15)'" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.1)'">
-            <span style="font-weight: 600; color: #374151; font-size: 0.9em;">${detail.ticket}</span>
-            <span style="
-              background: linear-gradient(135deg, ${borderColor}15, ${borderColor}25);
-              color: ${borderColor === '#dc2626' ? '#dc2626' : borderColor === '#f59e0b' ? '#d97706' : '#059669'};
-              padding: 2px 8px;
-              border-radius: 12px;
-              font-size: 0.8em;
-              font-weight: 700;
-              margin-left: 8px;
-              border: 1px solid ${borderColor}40;
-            ">Iteration Cases: ${detail.count}</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+              <div>
+                <span style="font-weight: 600; color: #374151; font-size: 0.9em;">${detail.ticket}</span>
+                <span style="
+                  background: linear-gradient(135deg, ${borderColor}15, ${borderColor}25);
+                  color: ${borderColor === '#dc2626' ? '#dc2626' : borderColor === '#f59e0b' ? '#d97706' : '#059669'};
+                  padding: 2px 8px;
+                  border-radius: 12px;
+                  font-size: 0.8em;
+                  font-weight: 700;
+                  margin-left: 8px;
+                  border: 1px solid ${borderColor}40;
+                ">Iteration Cases: ${detail.count}</span>
+              </div>
+              <div style="display: flex; align-items: center; margin-top: 4px;">
+                ${statusBadges}
+              </div>
+            </div>
           </div>`;
       }).join('');
       
