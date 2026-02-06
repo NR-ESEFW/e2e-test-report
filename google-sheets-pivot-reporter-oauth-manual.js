@@ -424,7 +424,7 @@ class GoogleSheetsPivotReporterOAuth {
               
 
               
-              <!-- Total Tickets Header -->
+              <!-- Total Tickets Header - Clickable to toggle details -->
               <div style="
                 background: linear-gradient(135deg, #3b82f6, #1d4ed8);
                 color: white;
@@ -435,15 +435,23 @@ class GoogleSheetsPivotReporterOAuth {
                 align-items: center;
                 justify-content: space-between;
                 box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-              ">
+                cursor: pointer;
+                transition: all 0.2s ease;
+              " onclick="toggleTesterDetails('${row.testerName.replace(/\s+/g, '')}'); this.style.transform = this.style.transform === 'scale(0.98)' ? 'scale(1)' : 'scale(0.98)'; setTimeout(() => this.style.transform = 'scale(1)', 100);">
                 <span style="font-weight: 600; font-size: 1.05em;">📋 Total Tickets under ${row.testerName}</span>
-                <span style="
-                  background: rgba(255, 255, 255, 0.2);
-                  padding: 4px 12px;
-                  border-radius: 20px;
-                  font-weight: 700;
-                  font-size: 1.1em;
-                ">${row.uniqueTicketCount}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="
+                    background: rgba(255, 255, 255, 0.2);
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-weight: 700;
+                    font-size: 1.1em;
+                  ">${row.uniqueTicketCount}</span>
+                  <span id="toggle-icon-${row.testerName.replace(/\s+/g, '')}" style="
+                    font-size: 1.2em;
+                    transition: transform 0.3s ease;
+                  ">▼</span>
+                </div>
               </div>
               
               <!-- Two Column Layout: Tickets List + Charts -->
@@ -504,6 +512,62 @@ class GoogleSheetsPivotReporterOAuth {
                       return totalCases > 0 ? Math.round((passedCases / totalCases) * 100) : 0;
                     })()}%</div>
                   </div>
+                </div>
+              </div>
+              
+              <!-- Collapsible Detailed Table Section -->
+              <div id="details-${row.testerName.replace(/\s+/g, '')}" style="
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.4s ease-in-out, padding 0.3s ease;
+                background: #ffffff;
+                border-radius: 8px;
+                margin-top: 12px;
+              ">
+                <div style="padding: 16px;">
+                  <h4 style="margin: 0 0 12px 0; color: #374151; font-size: 1.1em; font-weight: 600;">📊 Detailed Test Execution Results</h4>
+                  
+                  <!-- Individual Table for this tester -->
+                  <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                    <thead>
+                      <tr style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                        <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9em;">🎫 Jira Ticket</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9em;">🔄 Iteration</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9em;">📊 Status</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9em;">🐛 Defects</th>
+                        <th style="padding: 12px; text-align: left; font-weight: 600; font-size: 0.9em;">💬 Comments</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${sortedRows.map((r, index) => {
+                        const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+                        return `
+                        <tr style="
+                          background: ${rowBg};
+                          transition: all 0.2s ease;
+                        " onmouseover="this.style.background='#e0e7ff'" onmouseout="this.style.background='${rowBg}'">
+                          <td style="padding: 12px; color: #1f2937; font-weight: 600; font-size: 0.9em;">${r.jiraTicket}</td>
+                          <td style="padding: 12px; color: #6b7280; font-size: 0.9em;">${r.iteration}</td>
+                          <td style="padding: 8px;">
+                            <span style="
+                              background: ${statusColors[r.overallStatus] || '#e0e0e0'};
+                              color: ${r.overallStatus === 'Passed' ? '#065f46' : r.overallStatus === 'Failed' ? '#92400e' : r.overallStatus === 'Blocked' ? '#7f1d1d' : '#374151'};
+                              font-weight: 700;
+                              border-radius: 6px;
+                              text-align: center;
+                              text-transform: uppercase;
+                              font-size: 0.8em;
+                              padding: 6px 12px;
+                              display: inline-block;
+                              min-width: 80px;
+                            ">${r.overallStatus}</span>
+                          </td>
+                          <td style="padding: 12px; color: #6b7280; font-size: 0.9em;">${r.defects || '-'}</td>
+                          <td style="padding: 12px; color: #6b7280; font-size: 0.85em; max-width: 200px; word-wrap: break-word;">${r.comments || '-'}</td>
+                        </tr>`;
+                      }).join('')}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -812,6 +876,24 @@ class GoogleSheetsPivotReporterOAuth {
         });
       } catch(e) { console.log('Chart error for ${row.testerName}:', e); }`;
       }).join('')}
+      
+      // Toggle function for individual tester details
+      window.toggleTesterDetails = function(testerName) {
+        const detailsDiv = document.getElementById('details-' + testerName);
+        const toggleIcon = document.getElementById('toggle-icon-' + testerName);
+        
+        if (detailsDiv.style.maxHeight === '0px' || !detailsDiv.style.maxHeight) {
+          // Expand
+          detailsDiv.style.maxHeight = detailsDiv.scrollHeight + 'px';
+          detailsDiv.style.padding = '0';
+          toggleIcon.style.transform = 'rotate(180deg)';
+        } else {
+          // Collapse
+          detailsDiv.style.maxHeight = '0px';
+          detailsDiv.style.padding = '0';
+          toggleIcon.style.transform = 'rotate(0deg)';
+        }
+      };
     };
   </script>
 </body>
