@@ -830,10 +830,21 @@ class GoogleSheetsPivotReporterOAuth {
             }
           });
           
-          // Hide the entire ticket details section if no rows are visible
+          // Show empty state message in ticket details if no rows match
+          var existingEmptyMsg = ticketDetailsContainer.querySelector('.empty-ticket-details');
           if (visibleRowsInBlock === 0 && status !== 'ALL') {
-            ticketDetailsContainer.style.display = 'none';
+            if (!existingEmptyMsg) {
+              var emptyMsg = document.createElement('div');
+              emptyMsg.className = 'empty-ticket-details';
+              emptyMsg.style.cssText = 'text-align: center; padding: 20px; color: #6b7280; font-style: italic; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;';
+              emptyMsg.innerHTML = '📭 No ' + status.toLowerCase() + ' iterations found for this tester';
+              ticketDetailsContainer.appendChild(emptyMsg);
+            }
+            ticketDetailsContainer.style.display = 'block'; // Keep container visible to show message
           } else {
+            if (existingEmptyMsg) {
+              existingEmptyMsg.remove();
+            }
             ticketDetailsContainer.style.display = 'block';
           }
         }
