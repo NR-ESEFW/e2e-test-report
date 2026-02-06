@@ -477,9 +477,9 @@ class GoogleSheetsPivotReporterOAuth {
                     </div>
                   </div>
                   
-                  <!-- Success Rate -->
+                  <!-- Pass Rate -->
                   <div style="margin-top: 15px; padding: 10px; background: linear-gradient(45deg, #10b981, #059669); color: white; border-radius: 8px;">
-                    <div style="font-weight: 600; font-size: 0.9em;">🎯 Success Rate</div>
+                    <div style="font-weight: 600; font-size: 0.9em;">📊 Pass Rate</div>
                     <div style="font-size: 1.4em; font-weight: 700;">${(() => {
                       const totalCases = Object.values(group.statusCounts).reduce((sum, count) => sum + count, 0);
                       const passedCases = group.statusCounts.Passed || 0;
