@@ -733,6 +733,21 @@ class GoogleSheetsPivotReporterOAuth {
       </select>
     </div>
 
+    <!-- No Records Found Message -->
+    <div id="noRecordsMessage" style="
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+      border-radius: 12px;
+      margin: 20px 0;
+      border: 2px dashed #d1d5db;
+    ">
+      <div style="font-size: 3em; color: #9ca3af; margin-bottom: 16px;">🔍</div>
+      <h3 style="color: #374151; margin: 0 0 8px 0; font-size: 1.3em;">No Records Found</h3>
+      <p style="color: #6b7280; margin: 0; font-size: 1em;">No test results match your current filter criteria. Try adjusting your filters or select "All" to view all results.</p>
+    </div>
+
     <h2>Details by Tester</h2>
     ${aggregateBlocks}
 
@@ -775,16 +790,91 @@ class GoogleSheetsPivotReporterOAuth {
     function filterTesterStatus() {
       var tester = document.getElementById('testerSelect').value;
       var status = document.getElementById('statusSelect').value;
+      var visibleBlocks = 0;
+      var totalVisibleRows = 0;
+      
       document.querySelectorAll('.aggregate-block').forEach(function(block) {
-        var t = block.dataset.tester;
-        var s = (block.dataset.statuses || '').split(',');
-        var show = (tester === 'ALL' || t === tester) && (status === 'ALL' || s.includes(status));
-        block.classList.toggle('hidden', !show);
-        block.querySelectorAll('tbody tr').forEach(function(tr) {
-          var cell = tr.querySelector('td:nth-child(4)');
-          tr.style.display = (status === 'ALL' || cell?.textContent.trim() === status) ? '' : 'none';
-        });
+        var blockTester = block.dataset.tester;
+        var blockStatuses = (block.dataset.statuses || '').split(',');
+        
+        // Check if this tester block should be shown
+        var showBlock = (tester === 'ALL' || blockTester === tester) && 
+                       (status === 'ALL' || blockStatuses.includes(status));
+        
+        if (!showBlock) {
+          block.style.display = 'none';
+          return;
+        }
+        
+        var blockHasVisibleRows = false;
+        block.style.display = 'block';
+        
+        // Filter individual ticket detail rows in the left panel
+        var ticketDetailsContainer = block.querySelector('[style*="Ticket Details"]')?.parentElement;
+        if (ticketDetailsContainer) {
+          var ticketRows = ticketDetailsContainer.querySelectorAll('div[style*="border-left"]');
+          var visibleRowsInBlock = 0;
+          
+          ticketRows.forEach(function(row) {
+            var statusSpan = row.querySelector('span[style*="text-transform: uppercase"]');
+            if (statusSpan) {
+              var rowStatus = statusSpan.textContent.trim();
+              if (status === 'ALL' || rowStatus === status) {
+                row.style.display = 'block';
+                visibleRowsInBlock++;
+                totalVisibleRows++;
+                blockHasVisibleRows = true;
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+          
+          // Hide the entire ticket details section if no rows are visible
+          if (visibleRowsInBlock === 0 && status !== 'ALL') {
+            ticketDetailsContainer.style.display = 'none';
+          } else {
+            ticketDetailsContainer.style.display = 'block';
+          }
+        }
+        
+        // Filter detailed table rows in the collapsible section
+        var detailTable = block.querySelector('table tbody');
+        if (detailTable) {
+          detailTable.querySelectorAll('tr').forEach(function(tr) {
+            var statusCell = tr.querySelector('td:nth-child(3) span');
+            if (statusCell) {
+              var rowStatus = statusCell.textContent.trim();
+              if (status === 'ALL' || rowStatus === status) {
+                tr.style.display = '';
+                if (!blockHasVisibleRows) {
+                  totalVisibleRows++;
+                  blockHasVisibleRows = true;
+                }
+              } else {
+                tr.style.display = 'none';
+              }
+            }
+          });
+        }
+        
+        // Hide block if no visible rows
+        if (!blockHasVisibleRows && (tester !== 'ALL' || status !== 'ALL')) {
+          block.style.display = 'none';
+        } else if (blockHasVisibleRows) {
+          visibleBlocks++;
+        }
       });
+      
+      // Show/hide no records message
+      var noRecordsMsg = document.getElementById('noRecordsMessage');
+      if (noRecordsMsg) {
+        if ((tester !== 'ALL' || status !== 'ALL') && (visibleBlocks === 0 || totalVisibleRows === 0)) {
+          noRecordsMsg.style.display = 'block';
+        } else {
+          noRecordsMsg.style.display = 'none';
+        }
+      }
     }
     window.onload = function() {
       new Chart(document.getElementById('statusPieChart').getContext('2d'), {
