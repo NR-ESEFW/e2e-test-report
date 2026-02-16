@@ -1159,9 +1159,9 @@ class GoogleSheetsPivotReporterOAuth {
           'Content-Type': 'application/json'
         },
         params: {
-          jql: 'project = NR AND issuetype = "BA QA Issue" ORDER BY created DESC',
-          maxResults: 50,
-          fields: 'key,summary,priority,status,reporter,environment,created,updated'
+          jql: '(project = NR AND (issuetype = "BA QA Issue" OR issuetype = "Bug" OR issuetype = "Defect" OR issuetype = "E2E Defect")) OR reporter = "vthogaru@newrelic.com" ORDER BY created DESC',
+          maxResults: 500,
+          fields: 'key,summary,priority,status,reporter,environment,created,updated,issuetype,assignee'
         },
         timeout: 30000
       });
@@ -1176,6 +1176,9 @@ class GoogleSheetsPivotReporterOAuth {
         priority: issue.fields.priority?.name || 'Medium',
         status: issue.fields.status?.name || 'Open',
         reporter: issue.fields.reporter?.displayName || 'Unknown',
+        reporterEmail: issue.fields.reporter?.emailAddress || 'Unknown',
+        assignee: issue.fields.assignee?.displayName || 'Unassigned',
+        issueType: issue.fields.issuetype?.name || 'Issue',
         environment: issue.fields.environment || 'Not specified',
         created: new Date(issue.fields.created).toLocaleDateString(),
         updated: new Date(issue.fields.updated).toLocaleDateString()
@@ -1212,6 +1215,18 @@ class GoogleSheetsPivotReporterOAuth {
       acc[bug.status] = (acc[bug.status] || 0) + 1;
       return acc;
     }, {});
+    
+    // Add reporter analytics (matching your E2E Defects dashboard)
+    this.bugMetrics.reporters = this.jiraBugs.reduce((acc, bug) => {
+      const reporter = bug.reporter === 'Unknown' ? 'Unknown' : bug.reporter;
+      acc[reporter] = (acc[reporter] || 0) + 1;
+      return acc;
+    }, {});
+    
+    // Get vthogaru's specific tickets
+    this.bugMetrics.vthogaru_tickets = this.jiraBugs.filter(bug => 
+      bug.reporterEmail && bug.reporterEmail.includes('vthogaru@newrelic')
+    );
   }
 
   // Generate bug reports HTML with real JIRA data
@@ -1228,9 +1243,13 @@ class GoogleSheetsPivotReporterOAuth {
       'Done': '#10b981', 'Fixed': '#10b981', 'Resolved': '#10b981', 'Closed': '#7c3aed'
     };
     
-    const { priorities, statuses } = this.bugMetrics;
+    const { priorities, statuses, reporters, vthogaru_tickets } = this.bugMetrics;
     
-    const bugRows = this.jiraBugs.slice(0, 15).map(bug => `
+    // Sort reporters by issue count (matching your dashboard)
+    const sortedReporters = Object.entries(reporters).sort(([,a], [,b]) => b - a);
+    const topReporters = sortedReporters.slice(0, 10);
+    
+    const bugRows = this.jiraBugs.slice(0, 20).map(bug => `
       <tr style="border-bottom: 1px solid #e2e8f0;">
         <td style="padding: 12px; font-weight: 600; color: #3b82f6;">${bug.id}</td>
         <td style="padding: 12px; max-width: 400px; word-wrap: break-word;">${bug.summary}</td>
@@ -1241,7 +1260,22 @@ class GoogleSheetsPivotReporterOAuth {
           <span style="background: ${statusColors[bug.status] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">${bug.status}</span>
         </td>
         <td style="padding: 12px;">${bug.reporter}</td>
-        <td style="padding: 12px;">${bug.environment}</td>
+        <td style="padding: 12px;">${bug.issueType}</td>
+        <td style="padding: 12px;">${bug.assignee}</td>
+      </tr>`).join('');
+    
+    const vthogaru_rows = vthogaru_tickets.slice(0, 10).map(bug => `
+      <tr style="border-bottom: 1px solid #e2e8f0; background: #f0f9ff;">
+        <td style="padding: 12px; font-weight: 600; color: #3b82f6;">${bug.id}</td>
+        <td style="padding: 12px; max-width: 400px; word-wrap: break-word;">${bug.summary}</td>
+        <td style="padding: 12px;">
+          <span style="background: ${priorityColors[bug.priority] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">${bug.priority}</span>
+        </td>
+        <td style="padding: 12px;">
+          <span style="background: ${statusColors[bug.status] || '#6b7280'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8em;">${bug.status}</span>
+        </td>
+        <td style="padding: 12px;">${bug.assignee}</td>
+        <td style="padding: 12px;">${bug.created}</td>
       </tr>`).join('');
     
     return `
@@ -1276,13 +1310,42 @@ class GoogleSheetsPivotReporterOAuth {
           <canvas id="bugStatusChart" width="400" height="300"></canvas>
         </div>
         <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <h3 style="margin: 0 0 20px 0; color: #374151;">⚠️ Bug Priority Breakdown</h3>
-          <canvas id="bugPriorityChart" width="400" height="300"></canvas>
+          <h3 style="margin: 0 0 20px 0; color: #374151;">👥 Top Bug Reporters</h3>
+          <div style="max-height: 300px; overflow-y: auto;">
+            ${topReporters.map(([reporter, count]) => `
+              <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                <span style="font-weight: 600; color: #374151;">${reporter}</span>
+                <span style="background: #3b82f6; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: 600;">${count}</span>
+              </div>
+            `).join('')}
+          </div>
         </div>
       </div>
       
       <div class="bug-list">
-        <h3 style="margin: 0 0 20px 0; color: #374151;">🎯 Live JIRA Issues (Recent)</h3>
+        <h3 style="margin: 0 0 20px 0; color: #374151;">🎯 Your Bug Tickets (vthogaru@newrelic)</h3>
+        <div style="background: #eff6ff; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+          <strong style="color: #1d4ed8;">Total Issues Created by You: ${vthogaru_tickets.length}</strong>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+          <thead>
+            <tr style="background: #f0f9ff; border-bottom: 2px solid #e2e8f0;">
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Bug ID</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Summary</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Priority</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Status</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Assignee</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${vthogaru_rows || '<tr><td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">No tickets found for vthogaru@newrelic</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="bug-list">
+        <h3 style="margin: 0 0 20px 0; color: #374151;">🎯 All E2E Defects & BA QA Issues</h3>
         <table style="width: 100%; border-collapse: collapse;">
           <thead>
             <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
@@ -1291,7 +1354,8 @@ class GoogleSheetsPivotReporterOAuth {
               <th style="padding: 12px; text-align: left; font-weight: 600;">Priority</th>
               <th style="padding: 12px; text-align: left; font-weight: 600;">Status</th>
               <th style="padding: 12px; text-align: left; font-weight: 600;">Reporter</th>
-              <th style="padding: 12px; text-align: left; font-weight: 600;">Environment</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Type</th>
+              <th style="padding: 12px; text-align: left; font-weight: 600;">Assignee</th>
             </tr>
           </thead>
           <tbody>
