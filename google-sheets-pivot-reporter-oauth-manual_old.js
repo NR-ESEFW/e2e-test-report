@@ -461,7 +461,7 @@ class GoogleSheetsPivotReporterOAuth {
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                 
                 <!-- Left Column: Tickets List -->
-                <div data-section="ticket-details" style="
+                <div style="
                   background: #f9fafb;
                   border-radius: 8px;
                   padding: 12px;
@@ -965,106 +965,106 @@ class GoogleSheetsPivotReporterOAuth {
 </div>
 
   <script>
-  function filterTesterStatus() {
-  var tester = document.getElementById('testerSelect').value;
-  var status = document.getElementById('statusSelect').value;
-  var visibleBlocks = 0;
-  var totalVisibleRows = 0;
-  
-  document.querySelectorAll('.aggregate-block').forEach(function(block) {
-    var blockTester = block.dataset.tester;
-    var blockStatuses = (block.dataset.statuses || '').split(',');
-    
-    // Check if this tester block should be shown
-    var showBlock = (tester === 'ALL' || blockTester === tester) && 
-                   (status === 'ALL' || blockStatuses.includes(status));
-    
-    if (!showBlock) {
-      block.style.display = 'none';
-      return;
-    }
-    
-    var blockHasVisibleRows = false;
-    block.style.display = 'block';
-    
-    // FIX: Use data-section attribute instead of broken style selector
-    var ticketDetailsContainer = block.querySelector('[data-section="ticket-details"]');
-    if (ticketDetailsContainer) {
-      var ticketRows = ticketDetailsContainer.querySelectorAll('div[style*="border-left"]');
-      var visibleRowsInBlock = 0;
+    function filterTesterStatus() {
+      var tester = document.getElementById('testerSelect').value;
+      var status = document.getElementById('statusSelect').value;
+      var visibleBlocks = 0;
+      var totalVisibleRows = 0;
       
-      ticketRows.forEach(function(row) {
-        var statusSpan = row.querySelector('span[style*="text-transform: uppercase"]');
-        if (statusSpan) {
-          var rowStatus = statusSpan.textContent.trim().toUpperCase();
-          if (status === 'ALL' || rowStatus === status.toUpperCase()) {
-            row.style.display = 'block';
-            visibleRowsInBlock++;
-            totalVisibleRows++;
-            blockHasVisibleRows = true;
+      document.querySelectorAll('.aggregate-block').forEach(function(block) {
+        var blockTester = block.dataset.tester;
+        var blockStatuses = (block.dataset.statuses || '').split(',');
+        
+        // Check if this tester block should be shown
+        var showBlock = (tester === 'ALL' || blockTester === tester) && 
+                       (status === 'ALL' || blockStatuses.includes(status));
+        
+        if (!showBlock) {
+          block.style.display = 'none';
+          return;
+        }
+        
+        var blockHasVisibleRows = false;
+        block.style.display = 'block';
+        
+        // Filter individual ticket detail rows in the left panel
+        var ticketDetailsContainer = block.querySelector('[style*="Ticket Details"]')?.parentElement;
+        if (ticketDetailsContainer) {
+          var ticketRows = ticketDetailsContainer.querySelectorAll('div[style*="border-left"]');
+          var visibleRowsInBlock = 0;
+          
+          ticketRows.forEach(function(row) {
+            var statusSpan = row.querySelector('span[style*="text-transform: uppercase"]');
+            if (statusSpan) {
+              var rowStatus = statusSpan.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
+                row.style.display = 'block';
+                visibleRowsInBlock++;
+                totalVisibleRows++;
+                blockHasVisibleRows = true;
+              } else {
+                row.style.display = 'none';
+              }
+            }
+          });
+          
+          // Show empty state message in ticket details if no rows match
+          var existingEmptyMsg = ticketDetailsContainer.querySelector('.empty-ticket-details');
+          if (visibleRowsInBlock === 0 && status !== 'ALL') {
+            if (!existingEmptyMsg) {
+              var emptyMsg = document.createElement('div');
+              emptyMsg.className = 'empty-ticket-details';
+              emptyMsg.style.cssText = 'text-align: center; padding: 20px; color: #6b7280; font-style: italic; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;';
+              emptyMsg.innerHTML = '📭 No ' + status.toLowerCase() + ' iterations found for this tester';
+              ticketDetailsContainer.appendChild(emptyMsg);
+            }
+            ticketDetailsContainer.style.display = 'block'; // Keep container visible to show message
           } else {
-            row.style.display = 'none';
+            if (existingEmptyMsg) {
+              existingEmptyMsg.remove();
+            }
+            ticketDetailsContainer.style.display = 'block';
           }
+        }
+        
+        // Filter detailed table rows in the collapsible section
+        var detailTable = block.querySelector('table tbody');
+        if (detailTable) {
+          detailTable.querySelectorAll('tr').forEach(function(tr) {
+            var statusCell = tr.querySelector('td:nth-child(3) span');
+            if (statusCell) {
+              var rowStatus = statusCell.textContent.trim().toUpperCase();
+              if (status === 'ALL' || rowStatus === status.toUpperCase()) {
+                tr.style.display = '';
+                if (!blockHasVisibleRows) {
+                  totalVisibleRows++;
+                  blockHasVisibleRows = true;
+                }
+              } else {
+                tr.style.display = 'none';
+              }
+            }
+          });
+        }
+        
+        // Hide block if no visible rows
+        if (!blockHasVisibleRows && (tester !== 'ALL' || status !== 'ALL')) {
+          block.style.display = 'none';
+        } else if (blockHasVisibleRows) {
+          visibleBlocks++;
         }
       });
       
-      // Show empty state message in ticket details if no rows match
-      var existingEmptyMsg = ticketDetailsContainer.querySelector('.empty-ticket-details');
-      if (visibleRowsInBlock === 0 && status !== 'ALL') {
-        if (!existingEmptyMsg) {
-          var emptyMsg = document.createElement('div');
-          emptyMsg.className = 'empty-ticket-details';
-          emptyMsg.style.cssText = 'text-align: center; padding: 20px; color: #6b7280; font-style: italic; background: #f9fafb; border-radius: 8px; border: 1px dashed #d1d5db;';
-          emptyMsg.innerHTML = '📭 No ' + status.toLowerCase() + ' iterations found for this tester';
-          ticketDetailsContainer.appendChild(emptyMsg);
+      // Show/hide no records message
+      var noRecordsMsg = document.getElementById('noRecordsMessage');
+      if (noRecordsMsg) {
+        if ((tester !== 'ALL' || status !== 'ALL') && (visibleBlocks === 0 || totalVisibleRows === 0)) {
+          noRecordsMsg.style.display = 'block';
+        } else {
+          noRecordsMsg.style.display = 'none';
         }
-        ticketDetailsContainer.style.display = 'block';
-      } else {
-        if (existingEmptyMsg) {
-          existingEmptyMsg.remove();
-        }
-        ticketDetailsContainer.style.display = 'block';
       }
     }
-    
-    // Filter detailed table rows in the collapsible section
-    var detailTable = block.querySelector('table tbody');
-    if (detailTable) {
-      detailTable.querySelectorAll('tr').forEach(function(tr) {
-        var statusCell = tr.querySelector('td:nth-child(3) span');
-        if (statusCell) {
-          var rowStatus = statusCell.textContent.trim().toUpperCase();
-          if (status === 'ALL' || rowStatus === status.toUpperCase()) {
-            tr.style.display = '';
-            if (!blockHasVisibleRows) {
-              totalVisibleRows++;
-              blockHasVisibleRows = true;
-            }
-          } else {
-            tr.style.display = 'none';
-          }
-        }
-      });
-    }
-    
-    // Hide block if no visible rows
-    if (!blockHasVisibleRows && (tester !== 'ALL' || status !== 'ALL')) {
-      block.style.display = 'none';
-    } else if (blockHasVisibleRows) {
-      visibleBlocks++;
-    }
-  });
-  
-  // Show/hide no records message
-  var noRecordsMsg = document.getElementById('noRecordsMessage');
-  if (noRecordsMsg) {
-    if ((tester !== 'ALL' || status !== 'ALL') && (visibleBlocks === 0 || totalVisibleRows === 0)) {
-      noRecordsMsg.style.display = 'block';
-    } else {
-      noRecordsMsg.style.display = 'none';
-    }
-  }
-} 
     
     // Tab switching functionality
     function switchTab(tabName) {
