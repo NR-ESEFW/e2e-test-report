@@ -1,6 +1,8 @@
 name: Generate O2C Test Status Report
 
 on:
+  schedule:
+    - cron: '30 1-18 * * 1-5'
   workflow_dispatch:
 
 # Required for GitHub Pages deployment
