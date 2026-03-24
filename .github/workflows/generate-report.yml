@@ -35,12 +35,30 @@ jobs:
       
       - name: Setup Google OAuth token
         run: |
+          # Create oauth-credentials.json from environment variables
+          cat > oauth-credentials.json << 'EOF'
+          {
+            "installed": {
+              "client_id": "${{ secrets.GOOGLE_CLIENT_ID }}",
+              "project_id": "sheets-pivot-reporter",
+              "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+              "token_uri": "https://oauth2.googleapis.com/token",
+              "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+              "client_secret": "${{ secrets.GOOGLE_CLIENT_SECRET }}",
+              "redirect_uris": ["http://localhost"]
+            }
+          }
+          EOF
+          echo "OAuth credentials file created"
+          echo "OAuth file size: $(wc -c < oauth-credentials.json) bytes"
+          
+          # Create google-token.json from secret 
           cat > google-token.json << 'EOF'
           ${{ secrets.GOOGLE_TOKEN_JSON }}
           EOF
           echo "Google OAuth token file created"
-          echo "File size: $(wc -c < google-token.json) bytes"
-          echo "First few characters: $(head -c 50 google-token.json)"
+          echo "Token file size: $(wc -c < google-token.json) bytes"
+          echo "First few token characters: $(head -c 50 google-token.json)"
       
       - name: Debug Environment
         run: node debug-env.js
