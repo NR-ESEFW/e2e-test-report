@@ -35,8 +35,12 @@ jobs:
       
       - name: Setup Google OAuth token
         run: |
-          echo '${{ secrets.GOOGLE_TOKEN_JSON }}' > google-token.json
+          cat > google-token.json << 'EOF'
+          ${{ secrets.GOOGLE_TOKEN_JSON }}
+          EOF
           echo "Google OAuth token file created"
+          echo "File size: $(wc -c < google-token.json) bytes"
+          echo "First few characters: $(head -c 50 google-token.json)"
       
       - name: Debug Environment
         run: node debug-env.js
