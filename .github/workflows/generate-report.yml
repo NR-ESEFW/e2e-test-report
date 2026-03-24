@@ -27,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '24'
           cache: 'npm'
       
       - name: Install dependencies
@@ -51,8 +51,8 @@ jobs:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          ENABLE_BUG_REPORTS: true
-          ENABLE_PRORATION_CALC: true
+          ENABLE_BUG_REPORTS: ${{ secrets.ENABLE_BUG_REPORTS }}
+          ENABLE_PRORATION_CALC: ${{ secrets.ENABLE_PRORATION_CALC }}
       
       - name: Prepare deployment directory
         run: |
@@ -66,6 +66,7 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          cname: nr-esefw.github.io
       
       - name: Upload artifacts
         if: always()
