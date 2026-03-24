@@ -95,13 +95,44 @@ class GoogleSheetsPivotReporterOAuth {
     console.log(`   Found ${sheetNames.length} sheets`);
 
     // Step 2: Build ranges for batchGet (fetch ALL sheets in ONE call)
-    const ranges = allSheetTitles.map(name => `'${name.trim()}'`);
+    const ranges = allSheetTitles.map(name => {
+      // Properly escape sheet names that contain special characters like hyphens
+      const trimmedName = name.trim();
+      // For sheet names with special characters, wrap in single quotes and escape internal quotes
+      const escapedName = trimmedName.replace(/'/g, "''");
+      return `'${escapedName}'`;  // Just the sheet name, no range suffix
+    });
     
     console.log('📥 Fetching all sheet data in batch...');
-    const batchResponse = await this.sheets.spreadsheets.values.batchGet({
-      spreadsheetId: this.spreadsheetId,
-      ranges: ranges,
-    });
+    console.log('🔍 Debug - First few ranges:', ranges.slice(0, 3));
+    
+    let batchResponse;
+    try {
+      batchResponse = await this.sheets.spreadsheets.values.batchGet({
+        spreadsheetId: this.spreadsheetId,
+        ranges: ranges,
+      });
+    } catch (error) {
+      console.log('⚠️ Batch fetch failed, trying individual sheet fetch approach...');
+      console.log('Error details:', error.message);
+      
+      // Fallback: fetch sheets individually
+      const valueRanges = [];
+      for (const sheetName of allSheetTitles) {
+        try {
+          const response = await this.sheets.spreadsheets.values.get({
+            spreadsheetId: this.spreadsheetId,
+            range: sheetName, // Use sheet name without quotes
+          });
+          valueRanges.push(response.data);
+        } catch (sheetError) {
+          console.log(`⚠️ Failed to fetch sheet "${sheetName}":`, sheetError.message);
+          // Add empty data for failed sheets
+          valueRanges.push({ values: [] });
+        }
+      }
+      batchResponse = { data: { valueRanges } };
+    }
 
     // Step 3: Process all sheets
     const allData = [];
