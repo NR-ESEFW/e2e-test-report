@@ -38,6 +38,22 @@ jobs:
           echo '${{ secrets.GOOGLE_TOKEN_JSON }}' > google-token.json
           echo "Google OAuth token file created"
       
+      - name: Debug Environment
+        run: node debug-env.js
+        env:
+          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+          GOOGLE_SHEETS_GID: ${{ secrets.GOOGLE_SHEETS_GID }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          XRAY_CLIENT_ID: ${{ secrets.XRAY_CLIENT_ID }}
+          XRAY_CLIENT_SECRET: ${{ secrets.XRAY_CLIENT_SECRET }}
+          JIRA_CLIENT_SECRET: ${{ secrets.JIRA_CLIENT_SECRET }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          ENABLE_BUG_REPORTS: ${{ secrets.ENABLE_BUG_REPORTS }}
+          ENABLE_PRORATION_CALC: ${{ secrets.ENABLE_PRORATION_CALC }}
+      
       - name: Generate report from Google Sheets + Jira
         run: node google-sheets-pivot-reporter-oauth-manual.js
         env:
