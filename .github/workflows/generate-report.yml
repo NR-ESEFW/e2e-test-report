@@ -5,64 +5,53 @@ on:
     - cron: '30 1-18 * * 1-5'
   workflow_dispatch:
 
-# Required for GitHub Pages deployment
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 jobs:
-  generate-and-deploy:
+  generate-report:
     runs-on: ubuntu-latest
     
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
+    
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
-
+        with:
+          fetch-depth: 0
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
           cache: 'npm'
-
+      
       - name: Install dependencies
-        run: npm ci
-
-      - name: Setup Google OAuth Token
-        run: echo '${{ secrets.GOOGLE_OAUTH_TOKEN }}' > google-token.json
-
-      - name: Setup OAuth Credentials
-        run: echo '${{ secrets.GOOGLE_OAUTH_CREDENTIALS }}' > oauth-credentials.json
-
-      - name: Generate Report
-        env:
-          GOOGLE_SHEETS_SPREADSHEET_ID: ${{ secrets.GOOGLE_SHEETS_SPREADSHEET_ID }}
+        run: npm install
+      
+      - name: Generate report from Google Sheets + Jira
         run: node google-sheets-pivot-reporter-oauth-manual.js
-
-      - name: Prepare for deployment
-        run: |
-          mkdir -p _site
-          cp o2c-test-status-report.html _site/index.html
-          cp nr_image_logo.png _site/ 2>/dev/null || true
-          cp new_relic_logo_vertical.png _site/ 2>/dev/null || true
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '_site'
-
+        env:
+          GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_USERNAME: ${{ secrets.JIRA_USERNAME }}
+      
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-      - name: Report URL
-        run: |
-          echo "✅ Report published!"
-          echo "🔗 View at: ${{ steps.deployment.outputs.page_url }}"
+        uses: peaceiris/actions-gh-pages@v3
+        if: success()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          cname: nr-esefw.github.io
+      
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report-html
+          path: dist/
+          retention-days: 7
